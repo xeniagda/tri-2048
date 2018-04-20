@@ -2,7 +2,7 @@ use std::mem;
 use std::iter;
 use std::fmt::Write;
 
-use rand::{thread_rng, Rng};
+use ext;
 
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -191,17 +191,15 @@ pub fn get_random_adds(board: Board) -> Vec<(f32, Board)> {
 }
 
 pub fn pick<'a, T>(lst: &'a [(f32, T)]) -> &'a T {
-    let mut rng = thread_rng();
-
     let mut curr_prob = 1.;
     for (prob, item) in lst.iter() {
-        let num = rng.gen_range::<f32>(0., 1.);
+        let num = ext::rand();
         if &(num * curr_prob) < prob {
             return item;
         }
         curr_prob = curr_prob - prob;
     }
-    unreachable!()
+    &lst[0].1
 }
 
 #[test]
