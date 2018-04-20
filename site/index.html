@@ -8,6 +8,15 @@
     </head>
     <body>
         <canvas id="2048_canvas"></canvas>
+        <br/>
+        <button onclick="result.instance.exports.merge_dir(0)">↖️</button>
+        <button onclick="result.instance.exports.merge_dir(1)">↗️</button>
+        <br/>
+        <button onclick="result.instance.exports.merge_dir(2)">⬅️</button>
+        <button onclick="result.instance.exports.merge_dir(3)">➡️</button>
+        <br/>
+        <button onclick="result.instance.exports.merge_dir(4)">↙️</button>
+        <button onclick="result.instance.exports.merge_dir(5)">↗️</button>
     </body>
     <script>
         var squaresize_x = 15;
@@ -16,12 +25,14 @@
         var canvas = document.getElementById("2048_canvas");
         var ctx = canvas.getContext("2d");
 
-        canvas.width = squaresize_x * 100;
-        canvas.height = squaresize_y * 100;
+        canvas.width = squaresize_x * 20;
+        canvas.height = squaresize_y * 20;
         ctx.textAlign = "center";
         ctx.font = (squaresize_y * 0.8 | 0) + "px monospace";
 
         var LOG_BUF = "";
+
+        var result;
 
         fetch("tri_2048.wasm")
             .then(response => response.arrayBuffer())
@@ -50,7 +61,8 @@
                     u_rand: () => { return Math.random() }
                 }
             }))
-            .then(result => {
+            .then(result_ => {
+                result = result_;
                 result.instance.exports.start();
 
                 document.body.addEventListener("keydown", event => {

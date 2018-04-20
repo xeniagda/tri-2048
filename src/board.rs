@@ -19,9 +19,9 @@ pub enum Direction {
 }
 
 pub const DIRECTIONS: &[Direction] = &[
-    Direction::Right, Direction::Left,
-    Direction::UpR,   Direction::UpL,
-    Direction::DownR, Direction::DownL
+    Direction::UpL,   Direction::UpR,
+    Direction::Left, Direction::Right,
+    Direction::DownL, Direction::DownR
 ];
 
 impl Board {
