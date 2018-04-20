@@ -16,8 +16,8 @@
         var canvas = document.getElementById("2048_canvas");
         var ctx = canvas.getContext("2d");
 
-        canvas.width = squaresize_x * 10;
-        canvas.height = squaresize_y * 10;
+        canvas.width = squaresize_x * 100;
+        canvas.height = squaresize_y * 100;
         ctx.textAlign = "center";
         ctx.font = (squaresize_y * 0.8 | 0) + "px monospace";
 
@@ -37,7 +37,15 @@
                         }
                     },
                     u_set: (num, y, x) => {
-                        ctx.fillText(1 << num, x * squaresize_x, y * squaresize_y);
+                        if (num == 0) {
+                            text = ".";
+                        } else {
+                            text = 1 << num;
+                        }
+                        ctx.fillText(text, (x * 3 + 1) * squaresize_x, (y * 3 + 1) * squaresize_y);
+                    },
+                    u_clear: () => {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
                     },
                     u_rand: () => { return Math.random() }
                 }
@@ -45,9 +53,10 @@
             .then(result => {
                 result.instance.exports.start();
 
-                /* document.body.addEventListener("keydown", event => {
+                document.body.addEventListener("keydown", event => {
+                    <!-- console.log(event); -->
                     result.instance.exports.key_down(event.keyCode);
-                }); */
+                });
             })
     </script>
 </html>

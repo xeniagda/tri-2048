@@ -2,6 +2,8 @@ use std::mem;
 use std::iter;
 use std::fmt::Write;
 
+use std::io::Write as _Write;
+
 use ext;
 
 #[derive(Debug, Clone)]
@@ -199,7 +201,8 @@ pub fn pick<'a, T>(lst: &'a [(f32, T)]) -> &'a T {
         }
         curr_prob = curr_prob - prob;
     }
-    &lst[0].1
+    writeln!(ext::JSLog, "o no");
+    unreachable!()
 }
 
 #[test]

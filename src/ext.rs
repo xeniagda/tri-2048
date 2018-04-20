@@ -3,7 +3,8 @@ use std::io::{Write, Result as IResult};
 
 extern {
     fn u_log(msg: c_char);
-    fn u_set(num: u8, y: usize, x: usize);
+    fn u_set(num: u8, y: f32, x: f32);
+    fn u_clear();
     fn u_rand() -> f32;
 }
 
@@ -11,8 +12,12 @@ pub fn log(msg: u8) {
     unsafe { u_log(msg as c_char); }
 }
 
-pub fn set(num: u8, y: usize, x: usize) {
+pub fn set(num: u8, y: f32, x: f32) {
     unsafe { u_set(num, y, x); }
+}
+
+pub fn clear() {
+    unsafe { u_clear(); }
 }
 
 pub fn rand() -> f32 {
@@ -33,4 +38,5 @@ impl Write for JSLog {
         Ok(())
     }
 }
+
 
