@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Tri-2048</title>
+        <style>
+        </style>
+    </head>
+    <body>
+        <canvas id="2048_canvas"></canvas>
+    </body>
+    <script>
+        var width = 60;
+        var height = 35;
+        var squaresize_x = 15;
+        var squaresize_y = 20;
+
+        var canvas = document.getElementById("2048_canvas");
+        var ctx = canvas.getContext("2d");
+
+        canvas.width = width * squaresize_x;
+        canvas.height = height * squaresize_y;
+        ctx.textAlign = "center";
+        ctx.font = (squaresize_y * 0.8 | 0) + "px monospace";
+
+        var LOG_BUF = "";
+        amount = 0;
+
+        fetch("tri_2048.wasm")
+            .then(response => response.arrayBuffer())
+            .then(bytes => WebAssembly.instantiate(bytes, {
+                env: {
+                    u_log: ch => {
+                        if (ch == 10) {
+                            console.log(LOG_BUF);
+                            LOG_BUF = "";
+                        }
+                        else {
+                            LOG_BUF += String.fromCharCode(ch);
+                        }
+                    },
+                }
+            }))
+            .then(result => {
+                result.instance.exports.start();
+
+                /* document.body.addEventListener("keydown", event => {
+                    result.instance.exports.key_down(event.keyCode);
+                }); */
+            })
+    </script>
+</html>
