@@ -27,7 +27,88 @@
         <button class="move" onclick="result.instance.exports.merge_dir(5)">↘</button>
     </body>
     <script>
+
+        function to_px(y, x) {
+            let y_pos = y * Math.sqrt(3) / 2;
+            let x_pos = (x + (game_size - y - 1) / 2);
+
+            let y_px = y_pos * squaresize + poly_size;
+            let x_px = x_pos * squaresize + poly_size;
+
+            return [y_px, x_px]
+        }
+
+        function draw_tile(num, y, x) {
+            var pixels = to_px(y, x);
+            y_px = pixels[0];
+            x_px = pixels[1];
+
+            ctx.beginPath();
+            ctx.fillStyle = "#BBFFBB";
+            ctx.drawStyle = "#000000";
+            // draw polygon
+            ctx.moveTo(x_px, y_px + poly_size);
+            for (i = 0; i < 6; i++) {
+                angle = i * Math.PI / 3;
+                ctx.lineTo(x_px + poly_size * Math.sin(angle), y_px + poly_size * Math.cos(angle));
+            }
+
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
+
+            ctx.fillStyle = '#000';
+
+            if (num != 0) {
+                text = 1 << num;
+                ctx.fillText(text, x_px, y_px);
+            }
+        }
+
+        function draw_board() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (var y = 0; y < board.length; y++) {
+                for (var x = 0; x <= y; x++) {
+                    draw_tile(board_draw[y][x], y, x);
+                }
+            }
+
+            floating.forEach(floater => {
+                draw_tile(floater.num, floater.y, floater.x);
+            });
+
+            floating = floating.filter(floater => {
+                let dy = floater.to_y - floater.y;
+                let dx = floater.to_x - floater.x;
+
+                let dist = Math.sqrt(dx ** 2 + dy ** 2);
+
+                let dy_add = dy / dist * move_speed;
+                let dx_add = dx / dist * move_speed;
+
+                floater.y += dy_add;
+                floater.x += dx_add;
+
+                if (dist < move_speed) {
+                    board_draw[floater.to_y][floater.to_x] = board[floater.to_y][floater.to_x];
+                    return false;
+                } else {
+                    return true;
+                }
+            })
+        }
+
+        let move_speed = 0.2;
+
+        var board = [];
+        var floating = []; // {y: float, x: float, to_y: float, to_x: float}
+
+        var board_draw = [];
+
         var squaresize = 60;
+
+        let poly_size = squaresize / 2;
 
         var game_width, game_height;
 
@@ -51,47 +132,39 @@
                             LOG_BUF += String.fromCharCode(ch);
                         }
                     },
-                    u_set_size: (width_, height_) => {
-                        window.game_width = width_;
-                        window.game_height = height_;
-                        canvas.width = squaresize * (width_ + 1);
-                        canvas.height = squaresize * (height_ + 1);
+                    u_set_size: (size_) => {
+                        window.game_size = size_;
+                        canvas.width = squaresize * (size_ + 1);
+                        canvas.height = squaresize * (size_ + 1);
                         ctx.font = "20px helvetica";
                         ctx.textAlign = "center";
-                        console.log(width_, height_);
-                    },
-                    u_set: (num, y, x) => {
 
-                        let poly_size = squaresize / 2;
+                        board = [];
+                        board_draw = [];
 
-                        let x_pos = (x + y / 2);
-                        let y_pos = (game_width - y - 1) * Math.sqrt(3) / 2;
+                        for (var i = 0; i < size_; i++) {
+                            curr_line = [];
+                            for (var j = 0; j <= i; j++) {
+                                curr_line.push(0)
+                            }
+                            board.push(curr_line);
 
-                        let x_px = x_pos * squaresize + poly_size;
-                        let y_px = y_pos * squaresize + poly_size;
-
-                        ctx.beginPath();
-                        ctx.fillStyle = '#BBFFBB';
-                        ctx.drawStyle = '#000000';
-                        // draw polygon
-                        ctx.moveTo(x_px, y_px + poly_size);
-                        for (i = 0; i < 6; i++) {
-                            angle = i * Math.PI / 3;
-                            ctx.lineTo(x_px + poly_size * Math.sin(angle), y_px + poly_size * Math.cos(angle));
-                        }
-                        ctx.closePath();
-                        ctx.stroke();
-                        ctx.fill();
-
-                        ctx.fillStyle = '#000';
-
-                        if (num != 0) {
-                            text = 1 << num;
-                            ctx.fillText(text, x_px, y_px);
+                            curr_line = [];
+                            for (var j = 0; j <= i; j++) {
+                                curr_line.push(0)
+                            }
+                            board_draw.push(curr_line);
                         }
                     },
-                    u_clear: () => {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    u_set: (num, draw_direct, y, x) => {
+                        console.log(num, draw_direct, y, x, board);
+                        board[y][x] = num;
+                        if (draw_direct || num == 0) {
+                            board_draw[y][x] = num;
+                        }
+                    },
+                    u_move: (num, y, x, to_y, to_x) => {
+                        floating.push({num: num, y: y, x: x, to_y: to_y, to_x: to_x});
                     },
                     u_rand: () => { return Math.random() }
                 }
@@ -103,6 +176,8 @@
                 document.body.addEventListener("keydown", event => {
                     result.instance.exports.key_down(event.keyCode);
                 });
+
+                setInterval(draw_board, 10);
             })
     </script>
 </html>

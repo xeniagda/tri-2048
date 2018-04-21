@@ -32,16 +32,19 @@ lazy_static! {
 pub fn start() {
     let board_choices =
             get_random_adds(Board::empty(4)).into_iter()
-            .flat_map(|(prob, board)|
-                      board::get_random_adds(board).into_iter().map(move |(prob_, board_)| (prob_ * prob, board_))
+            .flat_map(|(prob, (board, pos))|
+                      board::get_random_adds(board)
+                          .into_iter()
+                          .map(move |(prob_, (board_, pos_))| (prob_ * prob, (board_, pos, pos_)))
                       )
             .collect::<Vec<_>>();
 
-    let board = pick(board_choices.as_slice()).clone();
+    let (board, pos1, pos2) = pick(board_choices.as_slice()).clone();
 
-    ext::set_size(board.tiles.len(), board.tiles.last().unwrap().len());
+    ext::set_size(board.tiles.len());
 
-    draw_board(&board);
+    ext::set(board.tiles[pos1.0][pos1.1], true, pos1.0, pos1.1);
+    ext::set(board.tiles[pos2.0][pos2.1], true, pos2.0, pos2.1);
 
     let mut board_lock = BOARD.lock().unwrap();
     *board_lock = Some(board);
@@ -66,18 +69,19 @@ fn merge(dir: Direction) {
     let mut board_lock = BOARD.lock().unwrap();
     if let Some(ref mut board) = *board_lock {
         if board.merge(dir) {
-            let res = pick(&get_random_adds(board.clone())).clone();
-            mem::replace(board, res);
+            let (new_board, pos) = pick(&get_random_adds(board.clone())).clone();
+            mem::replace(board, new_board);
+
+            ext::set(board.tiles[pos.0][pos.1], true, pos.0, pos.1);
         }
         draw_board(&board);
     }
 }
 
 fn draw_board(board: &board::Board) {
-    ext::clear();
     for y in 0..board.tiles.len() {
         for x in 0..board.tiles[y].len() {
-            ext::set(board.tiles[y][x], board.tiles.len() - y - 1, x, board.tiles.len());
+            ext::set(board.tiles[y][x], false, y, x);
         }
     }
 }

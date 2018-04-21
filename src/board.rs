@@ -41,6 +41,19 @@ impl Board {
                 .map(|(y, x)| (&*(&*self.tiles)[*y])[*x]) // ew
                 .collect::<Vec<_>>();
 
+        for i in 0..indicies.len() {
+            if values[i] != 0 {
+                let mut to: Option<(usize, usize)> = None;
+                for j in (0..i).rev() {
+                    if values[j] == 0 || values[j] == values[i] {
+                        to = Some(indicies[j]);
+                    }
+                }
+                to.map(|x| ext::move_tile(values[i], indicies[i], x));
+            }
+        }
+
+
         let merged = merge(values);
 
         let mut merged_any = false;
@@ -142,8 +155,6 @@ fn fmt_num(n: &u8) -> String {
 }
 
 pub fn merge(mut tiles: Vec<u8>) -> Vec<u8> {
-
-
     for i in 0..tiles.len() {
         let mut n = i;
         while n > 0 && tiles[n - 1] == 0 {
@@ -165,7 +176,7 @@ pub fn merge(mut tiles: Vec<u8>) -> Vec<u8> {
     tiles
 }
 
-pub fn get_random_adds(board: Board) -> Vec<(f32, Board)> {
+pub fn get_random_adds(board: Board) -> Vec<(f32, (Board, (usize, usize)))> {
     let mut total_placeable = 0;
     for y in 0..board.tiles.len() {
         for x in 0..y+1 {
@@ -181,11 +192,11 @@ pub fn get_random_adds(board: Board) -> Vec<(f32, Board)> {
             if board.tiles[y][x] == 0 {
                 let mut new_board = board.clone();
                 (*(&mut *new_board.tiles)[y])[x] = 1;
-                res.push((0.9 / total_placeable as f32, new_board));
+                res.push((0.9 / total_placeable as f32, (new_board, (y, x))));
 
                 let mut new_board = board.clone();
                 (*(&mut *new_board.tiles)[y])[x] = 2;
-                res.push((0.1 / total_placeable as f32, new_board));
+                res.push((0.1 / total_placeable as f32, (new_board, (y, x))));
             }
         }
     }
