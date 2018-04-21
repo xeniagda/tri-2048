@@ -4,19 +4,26 @@
         <meta charset="UTF-8">
         <title>Tri-2048</title>
         <style>
+.move {
+    padding: 32px 20px;
+    text-align: center;
+    display: inline-block;
+    border: none;
+    background: #BBBBBB;
+}
         </style>
     </head>
     <body>
         <canvas id="2048_canvas"></canvas>
         <br/>
-        <button onclick="result.instance.exports.merge_dir(0)">↖️</button>
-        <button onclick="result.instance.exports.merge_dir(1)">↗️</button>
+        <button class="move" onclick="result.instance.exports.merge_dir(0)">↖️</button>
+        <button class="move" onclick="result.instance.exports.merge_dir(1)">↗️</button>
         <br/>
-        <button onclick="result.instance.exports.merge_dir(2)">⬅️</button>
-        <button onclick="result.instance.exports.merge_dir(3)">➡️</button>
+        <button class="move" onclick="result.instance.exports.merge_dir(2)">⬅️</button>
+        <button class="move" onclick="result.instance.exports.merge_dir(3)">➡️</button>
         <br/>
-        <button onclick="result.instance.exports.merge_dir(4)">↙️</button>
-        <button onclick="result.instance.exports.merge_dir(5)">↗️</button>
+        <button class="move" onclick="result.instance.exports.merge_dir(4)">↙️</button>
+        <button class="move" onclick="result.instance.exports.merge_dir(5)">↘️</button>
     </body>
     <script>
         var squaresize_x = 15;
