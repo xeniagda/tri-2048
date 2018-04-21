@@ -39,6 +39,8 @@ pub fn start() {
 
     let board = pick(board_choices.as_slice()).clone();
 
+    ext::set_size(board.tiles.len(), board.tiles.last().unwrap().len());
+
     draw_board(&board);
 
     let mut board_lock = BOARD.lock().unwrap();
@@ -47,7 +49,6 @@ pub fn start() {
 
 #[no_mangle]
 pub fn key_down(key_code: u8) {
-    writeln!(ext::JSLog, "Key: {}", key_code);
 
     if let Some(dir) = KEY_MAP.get(&key_code) {
         merge(*dir);
@@ -62,8 +63,6 @@ pub fn merge_dir(dir: u8) {
 }
 
 fn merge(dir: Direction) {
-    writeln!(ext::JSLog, "Dir: {:?}", dir);
-
     let mut board_lock = BOARD.lock().unwrap();
     if let Some(ref mut board) = *board_lock {
         if board.merge(dir) {
@@ -78,7 +77,7 @@ fn draw_board(board: &board::Board) {
     ext::clear();
     for y in 0..board.tiles.len() {
         for x in 0..board.tiles[y].len() {
-            ext::set(board.tiles[y][x], y as f32, x as f32 + ((board.tiles.len() - y - 1) as f32) / 2.);
+            ext::set(board.tiles[y][x], board.tiles.len() - y - 1, x, board.tiles.len());
         }
     }
 }

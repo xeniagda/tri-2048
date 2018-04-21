@@ -11,6 +11,7 @@
     border: none;
     background: #BBBBBB;
 }
+
         </style>
     </head>
     <body>
@@ -26,16 +27,12 @@
         <button class="move" onclick="result.instance.exports.merge_dir(5)">↘️</button>
     </body>
     <script>
-        var squaresize_x = 15;
-        var squaresize_y = 20;
+        var squaresize = 60;
+
+        var game_width, game_height;
 
         var canvas = document.getElementById("2048_canvas");
         var ctx = canvas.getContext("2d");
-
-        canvas.width = squaresize_x * 20;
-        canvas.height = squaresize_y * 20;
-        ctx.textAlign = "center";
-        ctx.font = (squaresize_y * 0.8 | 0) + "px monospace";
 
         var LOG_BUF = "";
 
@@ -54,13 +51,44 @@
                             LOG_BUF += String.fromCharCode(ch);
                         }
                     },
+                    u_set_size: (width_, height_) => {
+                        window.game_width = width_;
+                        window.game_height = height_;
+                        canvas.width = squaresize * (width_ + 1);
+                        canvas.height = squaresize * (height_ + 1);
+                        ctx.font = "20px helvetica";
+                        ctx.textAlign = "center";
+                        console.log(width_, height_);
+                    },
                     u_set: (num, y, x) => {
-                        if (num == 0) {
-                            text = ".";
-                        } else {
-                            text = 1 << num;
+
+                        let poly_size = squaresize / 2;
+
+                        let x_pos = (x + y / 2);
+                        let y_pos = (game_width - y - 1) * Math.sqrt(3) / 2;
+
+                        let x_px = x_pos * squaresize + poly_size;
+                        let y_px = y_pos * squaresize + poly_size;
+
+                        ctx.beginPath();
+                        ctx.fillStyle = '#BBFFBB';
+                        ctx.drawStyle = '#000000';
+                        // draw polygon
+                        ctx.moveTo(x_px, y_px + poly_size);
+                        for (i = 0; i < 6; i++) {
+                            angle = i * Math.PI / 3;
+                            ctx.lineTo(x_px + poly_size * Math.sin(angle), y_px + poly_size * Math.cos(angle));
                         }
-                        ctx.fillText(text, (x * 3 + 1) * squaresize_x, (y * 3 + 1) * squaresize_y);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.fill();
+
+                        ctx.fillStyle = '#000';
+
+                        if (num != 0) {
+                            text = 1 << num;
+                            ctx.fillText(text, x_px, y_px);
+                        }
                     },
                     u_clear: () => {
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -73,7 +101,6 @@
                 result.instance.exports.start();
 
                 document.body.addEventListener("keydown", event => {
-                    <!-- console.log(event); -->
                     result.instance.exports.key_down(event.keyCode);
                 });
             })
