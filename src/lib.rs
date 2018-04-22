@@ -52,7 +52,6 @@ pub fn start() {
 
 #[no_mangle]
 pub fn key_down(key_code: u8) {
-
     if let Some(dir) = KEY_MAP.get(&key_code) {
         merge(*dir);
     }
@@ -74,8 +73,8 @@ fn merge(dir: Direction) {
 
             ext::set(board.tiles[pos.0][pos.1], false, pos.0, pos.1);
             ext::move_tile(board.tiles[pos.0][pos.1], pos, pos);
+            draw_board(&board);
         }
-        draw_board(&board);
     }
 }
 

@@ -394,4 +394,6 @@ fn test_merge() {
     assert_eq!((vec![4, 3, 2, 0], vec![(1, 0), (2, 1), (3, 2)]), merge(vec![3, 3, 3, 2]));
     assert_eq!((vec![1, 5, 0, 0], vec![(2, 0), (3, 1)]), merge(vec![0, 0, 1, 5]));
     assert_eq!((vec![2, 0, 0, 0], vec![(2, 0)]), merge(vec![1, 0, 1, 0]));
+
+    assert_eq!((vec![2, 3, 2], vec![]), merge(vec![2, 3, 2]));
 }
