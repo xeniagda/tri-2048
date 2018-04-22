@@ -7,8 +7,7 @@ authors = ["loovjo <jonathan.loov@gmail.com>"]
 crate-type = ["cdylib"]
 
 [features]
+wasm = []
 
 [dependencies]
 lazy_static = "1.0.0"
-
-# pancurses = { version = "0.15.0", optional = true }
