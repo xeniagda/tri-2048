@@ -54,7 +54,7 @@ impl Board {
         }
 
 
-        let merged = merge(values);
+        let merged = merge(values).0;
 
         let mut merged_any = false;
         for (value, (y, x)) in merged.into_iter().zip(indicies.iter()) {
@@ -154,26 +154,64 @@ fn fmt_num(n: &u8) -> String {
     else { format!("{}", 1 << (n)) }
 }
 
-pub fn merge(mut tiles: Vec<u8>) -> Vec<u8> {
-    for i in 0..tiles.len() {
-        let mut n = i;
-        while n > 0 && tiles[n - 1] == 0 {
-            tiles.swap(n, n - 1);
-            if n == 1 { break; }
-            n -= 1;
+pub fn merge(mut tiles: Vec<u8>) -> (Vec<u8>, Vec<(usize, usize)>) {
+
+    let orig_tiles = tiles.clone();
+
+    print!("{:?}", tiles);
+
+    let (mut tiles, first_moves) = move_left(tiles);
+
+    print!(" -> {:?}/{:?}", tiles, first_moves);
+
+    let mut merges: Vec<(usize, usize)> = vec![];
+
+    for i in 1..tiles.len() {
+        if tiles[i] == tiles[i - 1] && tiles[i] != 0 {
+            tiles[i] = 0;
+            tiles[i - 1] += 1;
+
+            merges.push((i, i - 1));
         }
     }
+    let mut merges_flat =
+            (0..tiles.len())
+            .map(|idx| merges.iter().find(|(from, to)| *from == idx).map(|x| x.1).unwrap_or(idx))
+            .collect::<Vec<_>>();
+
+    print!(" -> {:?}/{:?}", tiles, merges_flat);
+
+    let (tiles, second_moves) = move_left(tiles);
+
+    print!(" -> {:?}/{:?}", tiles, second_moves);
+
+    let all_merges =
+            (0..tiles.len())
+            .map(|x| (x, second_moves[merges_flat[first_moves[x]]]))
+            .filter(|(from, to)| from != to && orig_tiles[*from] != 0)
+            .collect();
+
+    println!(" -> {:?}", all_merges);
+
+    (tiles, all_merges)
+}
+
+pub fn move_left(mut tiles: Vec<u8>) -> (Vec<u8>, Vec<usize>) {
+    let mut move_lefts: Vec<usize> = vec![];
 
     for i in 0..tiles.len() {
-        if i + 1 < tiles.len() {
-            if tiles[i] == tiles[i + 1] && tiles[i] != 0 {
-                tiles.remove(i + 1);
-                tiles.push(0);
-                tiles[i] += 1;
+        let mut n = i;
+        while n > 0 {
+            if tiles[n - 1] != 0 {
+                break;
             }
+            tiles.swap(n, n - 1);
+            n -= 1;
         }
+        move_lefts.push(n);
     }
-    tiles
+
+    (tiles, move_lefts)
 }
 
 pub fn get_random_adds(board: Board) -> Vec<(f32, (Board, (usize, usize)))> {
@@ -353,17 +391,14 @@ fn test_board_merged_indicies() {
 
 #[test]
 fn test_merge() {
-    assert_eq!(vec![2, 0], merge(vec![1, 1]));
+    assert_eq!((vec![2, 0, 0, 0], vec![(1, 0)]), merge(vec![1, 1, 0, 0]));
+    assert_eq!((vec![2, 2, 0, 0], vec![(1, 0), (2, 1), (3, 1)]), merge(vec![1, 1, 1, 1]));
+    assert_eq!((vec![2, 2, 0, 0], vec![(1, 0), (2, 0), (3, 1)]), merge(vec![0, 1, 1, 2]));
 
-    assert_eq!(vec![2, 2, 0, 0], merge(vec![0, 1, 1, 2]));
+    assert_eq!((vec![2, 0, 0, 0], vec![(1, 0), (2, 0)]), merge(vec![0, 1, 1, 0]));
+    assert_eq!((vec![2, 2, 0, 0], vec![(2, 1), (3, 1)]), merge(vec![2, 0, 1, 1]));
 
-    assert_eq!(vec![2, 0, 0, 0], merge(vec![1, 1, 0, 0]));
-    assert_eq!(vec![2, 2, 0, 0], merge(vec![1, 1, 1, 1]));
-    assert_eq!(vec![4, 3, 2, 0], merge(vec![3, 3, 3, 2]));
-
-    assert_eq!(vec![2, 0, 0, 0], merge(vec![0, 1, 1, 0]));
-    assert_eq!(vec![2, 2, 0, 0], merge(vec![2, 0, 1, 1]));
-
-    assert_eq!(vec![1, 5, 0, 0], merge(vec![0, 0, 1, 5]));
-    assert_eq!(vec![2, 0, 0, 0], merge(vec![1, 0, 1, 0]));
+    assert_eq!((vec![4, 3, 2, 0], vec![(1, 0), (2, 1), (3, 2)]), merge(vec![3, 3, 3, 2]));
+    assert_eq!((vec![1, 5, 0, 0], vec![(2, 0), (3, 1)]), merge(vec![0, 0, 1, 5]));
+    assert_eq!((vec![2, 0, 0, 0], vec![(2, 0)]), merge(vec![1, 0, 1, 0]));
 }
