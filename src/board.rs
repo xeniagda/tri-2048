@@ -41,18 +41,6 @@ impl Board {
                 .map(|(y, x)| (&*(&*self.tiles)[*y])[*x]) // ew
                 .collect::<Vec<_>>();
 
-        for i in 0..indicies.len() {
-            if values[i] != 0 {
-                let mut to: Option<(usize, usize)> = None;
-                for j in (0..i).rev() {
-                    if values[j] == 0 || values[j] == values[i] {
-                        to = Some(indicies[j]);
-                    }
-                }
-                to.map(|x| ext::move_tile(values[i], indicies[i], x));
-            }
-        }
-
 
         let (merged, moves) = merge(values);
 
