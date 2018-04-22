@@ -38,7 +38,7 @@
             return [y_px, x_px]
         }
 
-        function draw_tile(num, y, x) {
+        function draw_tile(num, y, x, size) {
             var pixels = to_px(y, x);
             y_px = pixels[0];
             x_px = pixels[1];
@@ -47,10 +47,10 @@
             ctx.fillStyle = "#BBFFBB";
             ctx.drawStyle = "#000000";
             // draw polygon
-            ctx.moveTo(x_px, y_px + poly_size);
+            ctx.moveTo(x_px, y_px + size);
             for (i = 0; i < 6; i++) {
                 angle = i * Math.PI / 3;
-                ctx.lineTo(x_px + poly_size * Math.sin(angle), y_px + poly_size * Math.cos(angle));
+                ctx.lineTo(x_px + size * Math.sin(angle), y_px + size * Math.cos(angle));
             }
 
             ctx.closePath();
@@ -66,16 +66,20 @@
         }
 
         function draw_board() {
+            let current_time = + new Date();
+            let delta_t = (current_time - last_time) / 1000;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (var y = 0; y < board.length; y++) {
                 for (var x = 0; x <= y; x++) {
-                    draw_tile(board_draw[y][x], y, x);
+                    draw_tile(board_draw[y][x], y, x, poly_size);
                 }
             }
 
             floating.forEach(floater => {
-                draw_tile(floater.num, floater.y, floater.x);
+                draw_tile(floater.num, floater.y, floater.x, poly_size +
+                    poly_size * Math.max(0, 1 - (floater.bounce - 1) * (floater.bounce - 1)) / 10);
             });
 
             floating = floating.filter(floater => {
@@ -84,25 +88,40 @@
 
                 let dist = Math.sqrt(dx ** 2 + dy ** 2);
 
-                let dy_add = dy / dist * move_speed;
-                let dx_add = dx / dist * move_speed;
+                if (dist < move_speed * delta_t) {
+                    floater.x = floater.to_x;
+                    floater.y = floater.to_y;
 
-                floater.y += dy_add;
-                floater.x += dx_add;
-
-                if (dist < move_speed) {
-                    board_draw[floater.to_y][floater.to_x] = board[floater.to_y][floater.to_x];
-                    return false;
+                    if (floater.bounce < 2) {
+                        floater.bounce += bounce_speed * delta_t;
+                        return true;
+                    } else {
+                        board_draw[floater.to_y][floater.to_x] = board[floater.to_y][floater.to_x];
+                        return false;
+                    }
                 } else {
+                    let dy_add = dy / dist * move_speed;
+                    let dx_add = dx / dist * move_speed;
+
+                    floater.y += dy_add * delta_t;
+                    floater.x += dx_add * delta_t;
                     return true;
                 }
             })
+
+            last_time = current_time;
+
+            requestAnimationFrame(draw_board)
         }
 
-        let move_speed = 0.2;
+        let move_speed = 25;
+        let bounce_speed = 20;
+
+        var last_time;
 
         var board = [];
         var floating = []; // {y: float, x: float, to_y: float, to_x: float}
+
 
         var board_draw = [];
 
@@ -157,14 +176,13 @@
                         }
                     },
                     u_set: (num, draw_direct, y, x) => {
-                        console.log(num, draw_direct, y, x, board);
                         board[y][x] = num;
                         if (draw_direct || num == 0) {
                             board_draw[y][x] = num;
                         }
                     },
                     u_move: (num, y, x, to_y, to_x) => {
-                        floating.push({num: num, y: y, x: x, to_y: to_y, to_x: to_x});
+                        floating.push({num: num, bounce: 0, y: y, x: x, to_y: to_y, to_x: to_x});
                     },
                     u_rand: () => { return Math.random() }
                 }
@@ -177,7 +195,9 @@
                     result.instance.exports.key_down(event.keyCode);
                 });
 
-                setInterval(draw_board, 10);
+                last_time = + new Date();
+
+                requestAnimationFrame(draw_board)
             })
     </script>
 </html>

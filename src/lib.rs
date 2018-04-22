@@ -72,7 +72,8 @@ fn merge(dir: Direction) {
             let (new_board, pos) = pick(&get_random_adds(board.clone())).clone();
             mem::replace(board, new_board);
 
-            ext::set(board.tiles[pos.0][pos.1], true, pos.0, pos.1);
+            ext::set(board.tiles[pos.0][pos.1], false, pos.0, pos.1);
+            ext::move_tile(board.tiles[pos.0][pos.1], pos, pos);
         }
         draw_board(&board);
     }

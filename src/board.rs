@@ -54,7 +54,12 @@ impl Board {
         }
 
 
-        let merged = merge(values).0;
+        let (merged, moves) = merge(values);
+
+        for (from, to) in moves {
+            let from_coords = indicies[from];
+            ext::move_tile(self.tiles[from_coords.0][from_coords.1], from_coords, indicies[to]);
+        }
 
         let mut merged_any = false;
         for (value, (y, x)) in merged.into_iter().zip(indicies.iter()) {
