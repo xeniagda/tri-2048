@@ -28,23 +28,29 @@
     </body>
     <script>
 
+        const COLORS = ["#6e838f", "#3c00ff", "#b90bf9", "#f9137f", "#c90c21", "#f65904", "#fba40f"];
+
         function to_px(y, x) {
             let y_pos = y * Math.sqrt(3) / 2;
             let x_pos = (x + (game_size - y - 1) / 2);
 
-            let y_px = y_pos * squaresize + poly_size;
-            let x_px = x_pos * squaresize + poly_size;
+            let y_px = y_pos * squaresize + poly_size * 1.5;
+            let x_px = x_pos * squaresize + poly_size * 1.5;
 
             return [y_px, x_px]
         }
 
-        function draw_tile(num, y, x, size) {
+        function draw_tile(num, y, x, size, color) {
             var pixels = to_px(y, x);
             y_px = pixels[0];
             x_px = pixels[1];
 
             ctx.beginPath();
-            ctx.fillStyle = "#BBFFBB";
+            if (color) {
+                ctx.fillStyle = color;
+            } else {
+                ctx.fillStyle = "#e80300";
+            }
             ctx.drawStyle = "#000000";
             // draw polygon
             ctx.moveTo(x_px, y_px + size);
@@ -73,13 +79,14 @@
 
             for (var y = 0; y < board.length; y++) {
                 for (var x = 0; x <= y; x++) {
-                    draw_tile(board_draw[y][x], y, x, poly_size);
+                    draw_tile(board_draw[y][x], y, x, poly_size, COLORS[board_draw[y][x]]);
                 }
             }
 
             floating.forEach(floater => {
                 draw_tile(floater.num, floater.y, floater.x, poly_size +
-                    poly_size * Math.max(0, 1 - (floater.bounce - 1) * (floater.bounce - 1)) / 10);
+                    poly_size * Math.max(0, 1 - (floater.bounce - 1) * (floater.bounce - 1)) / 10,
+                    COLORS[floater.num]);
             });
 
             floating = floating.filter(floater => {
