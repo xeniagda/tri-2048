@@ -29,25 +29,44 @@ lazy_static! {
 }
 
 #[no_mangle]
-pub fn start() {
-    let board_choices =
-            get_random_adds(Board::empty(4)).into_iter()
+pub fn reset(board_size: usize, add_rand: bool) {
+    ext::set_size(board_size);
+
+    let mut new_board = Board::empty(board_size);
+
+    if add_rand {
+        let board_choices =
+            get_random_adds(Board::empty(board_size)).into_iter()
             .flat_map(|(prob, (board, pos))|
                       board::get_random_adds(board)
-                          .into_iter()
-                          .map(move |(prob_, (board_, pos_))| (prob_ * prob, (board_, pos, pos_)))
-                      )
+                      .into_iter()
+                      .map(move |(prob_, (board_, pos_))| (prob_ * prob, (board_, pos, pos_)))
+                     )
             .collect::<Vec<_>>();
 
-    let (board, pos1, pos2) = pick(board_choices.as_slice()).clone();
 
-    ext::set_size(board.tiles.len());
+        let (board, pos1, pos2) = pick(board_choices.as_slice()).clone();
+        draw_board(&board);
 
-    ext::set(board.tiles[pos1.0][pos1.1], true, pos1.0, pos1.1);
-    ext::set(board.tiles[pos2.0][pos2.1], true, pos2.0, pos2.1);
+        ext::set(board.tiles[pos1.0][pos1.1], true, pos1.0, pos1.1);
+        ext::set(board.tiles[pos2.0][pos2.1], true, pos2.0, pos2.1);
+
+        new_board = board;
+    }
 
     let mut board_lock = BOARD.lock().unwrap();
-    *board_lock = Some(board);
+    *board_lock = Some(new_board);
+}
+
+#[no_mangle]
+pub fn set_tile(num: u8, y: usize, x: usize) {
+    let mut board_lock = BOARD.lock().unwrap();
+
+    if let Some(ref mut board) = *board_lock {
+        board.tiles[y][x] = num;
+
+        ext::set(num, true, y, x);
+    }
 }
 
 #[no_mangle]
@@ -71,8 +90,7 @@ fn merge(dir: Direction) {
             let (new_board, pos) = pick(&get_random_adds(board.clone())).clone();
             mem::replace(board, new_board);
 
-            ext::set(board.tiles[pos.0][pos.1], false, pos.0, pos.1);
-            ext::move_tile(board.tiles[pos.0][pos.1], pos, pos);
+            ext::set(board.tiles[pos.0][pos.1], true, pos.0, pos.1);
             draw_board(&board);
         }
     }

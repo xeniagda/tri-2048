@@ -25,7 +25,7 @@ pub const DIRECTIONS: &[Direction] = &[
 ];
 
 impl Board {
-    pub fn empty(edge_length: u8) -> Board {
+    pub fn empty(edge_length: usize) -> Board {
         let tiles =
                 (1..edge_length+1)
                 .map(|len|
