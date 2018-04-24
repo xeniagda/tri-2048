@@ -7,6 +7,7 @@ extern {
     fn u_set_size(size: usize);
     fn u_set(num: u8, draw_direct: bool, y: usize, x: usize);
     fn u_move(num: u8, y: usize, x: usize, y_to: usize, x_to: usize);
+    fn u_lose();
     fn u_rand() -> f32;
 }
 
@@ -30,6 +31,11 @@ pub fn move_tile(num: u8, pos: (usize, usize), to: (usize, usize)) {
     unsafe {
         u_move(num, pos.0, pos.1, to.0, to.1);
     }
+}
+
+pub fn lose() {
+    #[cfg(feature="wasm")]
+    unsafe { u_lose(); }
 }
 
 pub fn rand() -> f32 {

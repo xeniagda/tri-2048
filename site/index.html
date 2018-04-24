@@ -81,6 +81,7 @@
             } else {
                 ctx.fillStyle = "#e80300";
             }
+
             ctx.drawStyle = outline;
             // draw polygon
             ctx.moveTo(x_px, y_px + size);
@@ -141,6 +142,11 @@
                     num_to_color(floater.num), "#000000");
             });
 
+            if (ded) {
+                ctx.fillStyle = "#fff";
+                ctx.fillText("u ded lol", canvas.width / 2, canvas.height / 2);
+            }
+
             floating = floating.filter(floater => {
                 let dy = floater.to_y - floater.y;
                 let dx = floater.to_x - floater.x;
@@ -177,6 +183,8 @@
 
         let move_speed = 25;
         let bounce_speed = 20;
+
+        var ded = false;
 
         var last_time;
 
@@ -252,6 +260,11 @@
                     },
                     u_move: (num, y, x, to_y, to_x) => {
                         floating.push({num: num, bounce: 0, y: y, x: x, to_y: to_y, to_x: to_x});
+                    },
+                    u_lose: () => {
+                        ded = true;
+                        console.log("u ded lol");
+                        localStorage.removeItem("board");
                     },
                     u_rand: () => { return Math.random() },
                 }

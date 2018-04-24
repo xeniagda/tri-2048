@@ -7,13 +7,14 @@ use std::sync::{Mutex, Arc};
 use std::collections::HashMap;
 use std::io::Write;
 use std::mem;
+use std::panic::set_hook;
 
 #[macro_use]
 mod ext;
 mod board;
 
-use board::{Direction, Board, get_random_adds, pick};
 
+use board::{Direction, DIRECTIONS, Board, get_random_adds, pick};
 lazy_static! {
     static ref BOARD: Arc<Mutex<Option<Board>>> = Arc::new(Mutex::new(None));
     static ref KEY_MAP: HashMap<u8, Direction> = {
@@ -26,6 +27,24 @@ lazy_static! {
         keymap.insert(86, Direction::DownR); // V
         keymap
     };
+}
+
+#[no_mangle]
+pub fn setup() {
+    // Set panic hook
+    set_hook(Box::new(|info| {
+        writeln!(ext::JSLog, "FATAL ERROR:");
+        if let Some(payload) = info.payload().downcast_ref::<&str>() {
+            writeln!(ext::JSLog, "    Payload: {:?}", payload);
+        } else if let Some(payload) = info.payload().downcast_ref::<String>() {
+            writeln!(ext::JSLog, "    Payload: {:?}", payload);
+        } else {
+            writeln!(ext::JSLog, "    Payload: unknown");
+        }
+        if let Some(location) = info.location() {
+            writeln!(ext::JSLog, "    At: {:?}", location);
+        }
+    }));
 }
 
 #[no_mangle]
@@ -86,14 +105,30 @@ pub fn merge_dir(dir: u8) {
 fn merge(dir: Direction) {
     let mut board_lock = BOARD.lock().unwrap();
     if let Some(ref mut board) = *board_lock {
-        if board.merge(dir) {
+        if board.merge(dir, true) {
             let (new_board, pos) = pick(&get_random_adds(board.clone())).clone();
             mem::replace(board, new_board);
 
             ext::set(board.tiles[pos.0][pos.1], true, pos.0, pos.1);
             draw_board(&board);
+
+        }
+        check_dead(&board);
+    }
+
+}
+
+fn check_dead(board: &Board) {
+    for dir in DIRECTIONS {
+        let mut cloned = board.clone();
+        cloned.merge(*dir, false);
+        if &cloned != board {
+            writeln!(ext::JSLog, "{:?} worked", dir);
+            return;
         }
     }
+
+    ext::lose();
 }
 
 fn draw_board(board: &board::Board) {

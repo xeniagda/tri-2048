@@ -6,7 +6,7 @@ use std::io::Write as _Write;
 
 use ext;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Board {
     pub tiles: Box<[Box<[u8]>]> // Lengths 1, 2, 3, ...
 }
@@ -35,7 +35,7 @@ impl Board {
         Board { tiles: tiles.into_boxed_slice() }
     }
 
-    fn merge_indicies(&mut self, indicies: &[(usize, usize)]) -> bool {
+    fn merge_indicies(&mut self, indicies: &[(usize, usize)], show: bool) -> bool {
         let values =
                 indicies.iter()
                 .map(|(y, x)| (&*(&*self.tiles)[*y])[*x]) // ew
@@ -46,7 +46,10 @@ impl Board {
 
         for (from, to) in moves {
             let from_coords = indicies[from];
-            ext::move_tile(self.tiles[from_coords.0][from_coords.1], from_coords, indicies[to]);
+
+            if show {
+                ext::move_tile(self.tiles[from_coords.0][from_coords.1], from_coords, indicies[to]);
+            }
         }
 
         let mut merged_any = false;
@@ -60,7 +63,7 @@ impl Board {
         merged_any
     }
 
-    pub fn merge(&mut self, dir: Direction) -> bool {
+    pub fn merge(&mut self, dir: Direction, show: bool) -> bool {
         let mut succ = false;
         match dir {
             Direction::Left => {
@@ -68,7 +71,7 @@ impl Board {
                     let indicies = (0..line+1).into_iter()
                             .map(|x| (line, x))
                             .collect::<Vec<_>>();
-                    succ |= self.merge_indicies(indicies.as_slice());
+                    succ |= self.merge_indicies(indicies.as_slice(), show);
                 }
             }
             Direction::Right => {
@@ -77,7 +80,7 @@ impl Board {
                             .map(|x| (line, x))
                             .rev()
                             .collect::<Vec<_>>();
-                    succ |= self.merge_indicies(indicies.as_slice());
+                    succ |= self.merge_indicies(indicies.as_slice(), show);
                 }
             }
             Direction::UpL => {
@@ -85,7 +88,7 @@ impl Board {
                     let indicies = (0..self.tiles.len() - line).into_iter()
                             .map(|x| (line + x, x))
                             .collect::<Vec<_>>();
-                    succ |= self.merge_indicies(indicies.as_slice());
+                    succ |= self.merge_indicies(indicies.as_slice(), show);
                 }
             }
             Direction::DownR => {
@@ -94,7 +97,7 @@ impl Board {
                             .map(|x| (line + x, x))
                             .rev()
                             .collect::<Vec<_>>();
-                    succ |= self.merge_indicies(indicies.as_slice());
+                    succ |= self.merge_indicies(indicies.as_slice(), show);
                 }
             }
             Direction::UpR => {
@@ -102,7 +105,7 @@ impl Board {
                     let indicies = (0..self.tiles.len() - line).into_iter()
                             .map(|x| (x + line, line))
                             .collect::<Vec<_>>();
-                    succ |= self.merge_indicies(indicies.as_slice());
+                    succ |= self.merge_indicies(indicies.as_slice(), show);
                 }
             }
             Direction::DownL => {
@@ -111,7 +114,7 @@ impl Board {
                             .map(|x| (x + line, line))
                             .rev()
                             .collect::<Vec<_>>();
-                    succ |= self.merge_indicies(indicies.as_slice());
+                    succ |= self.merge_indicies(indicies.as_slice(), show);
                 }
             }
         }
