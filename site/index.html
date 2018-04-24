@@ -30,7 +30,35 @@
     </body>
     <script>
 
-        const COLORS = ["#6e838f", "#3c00ff", "#b90bf9", "#f9137f", "#c90c21", "#f65904", "#fba40f"];
+        function rgbToHex(rgb) {
+            return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
+        }
+
+        function hue(h)
+        {
+            var r = Math.abs(h * 6 - 3) - 1;
+            var g = 2 - Math.abs(h * 6 - 2);
+            var b = 2 - Math.abs(h * 6 - 4);
+            return [Math.floor(r * 255),Math.floor(g * 255),Math.floor(b * 255)];
+        }
+
+        function HSVtoRGB(h, s, v) {
+            var r, g, b, i, f, p, q, t;
+            i = Math.floor(h * 6);
+            f = h * 6 - i;
+            p = v * (1 - s);
+            q = v * (1 - f * s);
+            t = v * (1 - (1 - f) * s);
+            switch (i % 6) {
+                case 0: r = v, g = t, b = p; break;
+                case 1: r = q, g = v, b = p; break;
+                case 2: r = p, g = v, b = t; break;
+                case 3: r = p, g = q, b = v; break;
+                case 4: r = t, g = p, b = v; break;
+                case 5: r = v, g = p, b = q; break;
+            }
+            return [Math.floor(r * 255),Math.floor(g * 255),Math.floor(b * 255)];
+        }
 
         function to_px(y, x) {
             let y_pos = y * Math.sqrt(3) / 2;
@@ -42,7 +70,7 @@
             return [y_px, x_px]
         }
 
-        function draw_tile(num, y, x, size, color) {
+        function draw_tile(num, y, x, size, color, outline) {
             var pixels = to_px(y, x);
             y_px = pixels[0];
             x_px = pixels[1];
@@ -53,7 +81,7 @@
             } else {
                 ctx.fillStyle = "#e80300";
             }
-            ctx.drawStyle = "#000000";
+            ctx.drawStyle = outline;
             // draw polygon
             ctx.moveTo(x_px, y_px + size);
             for (i = 0; i < 6; i++) {
@@ -62,8 +90,12 @@
             }
 
             ctx.closePath();
-            ctx.stroke();
-            ctx.fill();
+            if (color) {
+                ctx.fill();
+            }
+            if (outline) {
+                ctx.stroke();
+            }
 
             ctx.fillStyle = '#000';
 
@@ -73,22 +105,40 @@
             }
         }
 
+        function num_to_color(num) {
+            return rgbToHex(hue(num / 11 + color_time))
+        }
+
         function draw_board() {
             let current_time = + new Date();
             let delta_t = (current_time - last_time) / 1000;
+
+            color_time += delta_t / 10;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (var y = 0; y < board.length; y++) {
                 for (var x = 0; x <= y; x++) {
-                    draw_tile(board_draw[y][x], y, x, poly_size, COLORS[board_draw[y][x]]);
+                    draw_tile(0, y, x, poly_size * 1.5, null, "#000000");
+                }
+            }
+
+            for (var y = 0; y < board.length; y++) {
+                for (var x = 0; x <= y; x++) {
+                    draw_tile(0, y, x, poly_size * 1.5, "#ffb368", null);
+                }
+            }
+
+            for (var y = 0; y < board.length; y++) {
+                for (var x = 0; x <= y; x++) {
+                    draw_tile(board_draw[y][x], y, x, poly_size, num_to_color(board_draw[y][x]), "#000000");
                 }
             }
 
             floating.forEach(floater => {
                 draw_tile(floater.num, floater.y, floater.x, poly_size +
                     poly_size * Math.max(0, 1 - (floater.bounce - 1) * (floater.bounce - 1)) / 10,
-                    COLORS[floater.num]);
+                    num_to_color(floater.num), "#000000");
             });
 
             floating = floating.filter(floater => {
@@ -122,6 +172,8 @@
 
             requestAnimationFrame(draw_board)
         }
+
+        var color_time = 0;
 
         let move_speed = 25;
         let bounce_speed = 20;
