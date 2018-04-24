@@ -106,7 +106,7 @@
         }
 
         function num_to_color(num) {
-            return rgbToHex(hue(num / 11 + color_time))
+            return rgbToHex(HSVtoRGB(num / 11 + color_time, 1, 1))
         }
 
         function draw_board() {
