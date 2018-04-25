@@ -37,7 +37,7 @@ canvas {
 
                 <br/>
                 <select id="colorscheme">
-                    <option class="color" value="normal" selected> Normal colorscheme </option>
+                    <!-- <option class="color" value="normal" selected> Normal colorscheme </option> -->
                     <option class="color" value="2048"> 2048 colorscheme </option>
                     <option class="color" value="rainbow"> Rainbow! </option>
                 </select>
@@ -200,14 +200,16 @@ canvas {
             floating.forEach(floater => {
                 let col_out = get_color_and_outline(floater.num);
 
+                let bounce = floater.bounce % 2;
+
                 draw_tile(floater.num, floater.y, floater.x, poly_size +
-                    poly_size * Math.max(0, 1 - (floater.bounce - 1) * (floater.bounce - 1)) / 10,
+                    poly_size * Math.max(0, 1 - (bounce - 1) * (bounce - 1)) / 10,
                     col_out[0], col_out[1]);
             });
 
             if (ded) {
                 ctx.fillStyle = "#000000";
-                ctx.fillText("u ded lol", canvas.width / 2 - 3, canvas.height / 2 - 3);
+                ctx.fillText("u ded lol", canvas.width / 2 - 2, canvas.height / 2 - 2);
                 ctx.fillStyle = "#ffffff";
                 ctx.fillText("u ded lol", canvas.width / 2, canvas.height / 2);
             }
