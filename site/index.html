@@ -12,28 +12,37 @@
     background: #BBBBBB;
 }
 
+canvas {
+    display: inline-block;
+    vertical-align: middle;
+}
+
         </style>
         <script src="rounded.js"></script>
     </head>
     <body>
-        <canvas id="2048_canvas" /></canvas>
-        <br/> <br/>
-        <button class="move" onclick="result.instance.exports.merge_dir(0)">↖</button>
-        <button class="move" onclick="result.instance.exports.merge_dir(1)">↗</button>
-        <br/> <br/>
-        <button class="move" onclick="result.instance.exports.merge_dir(2)">←</button>
-        <button class="move" onclick="result.instance.exports.merge_dir(3)">→</button>
-        <br/> <br/>
-        <button class="move" onclick="result.instance.exports.merge_dir(4)">↙</button>
-        <button class="move" onclick="result.instance.exports.merge_dir(5)">↘</button>
-        <br/> <br/>
-        <button class="move" onclick="result.instance.exports.reset(4, true); ded = false;">Restart</button>
+        <div style="display: inline-block;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);white-space: nowrap;overflow: hidden;">
+            <canvas id="2048_canvas" /></canvas>
+            <div style="display: inline-block;vertical-align: middle;">
+                <button class="move" onclick="result.instance.exports.merge_dir(0)">↖</button>
+                <button class="move" onclick="result.instance.exports.merge_dir(1)">↗</button>
+                <br/> <br/>
+                <button class="move" onclick="result.instance.exports.merge_dir(2)">←</button>
+                <button class="move" onclick="result.instance.exports.merge_dir(3)">→</button>
+                <br/> <br/>
+                <button class="move" onclick="result.instance.exports.merge_dir(4)">↙</button>
+                <button class="move" onclick="result.instance.exports.merge_dir(5)">↘</button>
+                <br/> <br/>
+                <button class="move" onclick="result.instance.exports.reset(4, true); ded = false;">Restart</button>
 
-        <br/>
-        <select id="colorscheme">
-            <option class="color" value="2048" selected> 2048 colorscheme </option>
-            <option class="color" value="rainbow"> Rainbow! </option>
-        </select>
+                <br/>
+                <select id="colorscheme">
+                    <option class="color" value="normal" selected> Normal colorscheme </option>
+                    <option class="color" value="2048"> 2048 colorscheme </option>
+                    <option class="color" value="rainbow"> Rainbow! </option>
+                </select>
+            </div>
+        </div>
     </body>
     <script>
 
@@ -175,7 +184,7 @@
                     } else if (colorscheme == "2048") {
                         color = COLORS_2048[1];
                     } else if (colorscheme == "rainbow") {
-                        color = "#ffb368";
+                        color = "#222222";
                     }
                     draw_tile(0, y, x, poly_size * 1.5, color, null);
                 }
@@ -197,7 +206,9 @@
             });
 
             if (ded) {
-                ctx.fillStyle = "#fff";
+                ctx.fillStyle = "#000000";
+                ctx.fillText("u ded lol", canvas.width / 2 - 3, canvas.height / 2 - 3);
+                ctx.fillStyle = "#ffffff";
                 ctx.fillText("u ded lol", canvas.width / 2, canvas.height / 2);
             }
 
