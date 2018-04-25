@@ -13,6 +13,7 @@
 }
 
         </style>
+        <script src="rounded.js"></script>
     </head>
     <body>
         <canvas id="2048_canvas" /></canvas>
@@ -84,11 +85,14 @@
 
             ctx.drawStyle = outline;
             // draw polygon
-            ctx.moveTo(x_px, y_px + size);
+
+            var points = [];
             for (i = 0; i < 6; i++) {
                 angle = i * Math.PI / 3;
-                ctx.lineTo(x_px + size * Math.sin(angle), y_px + size * Math.cos(angle));
+                points.push([x_px + size * Math.sin(angle), y_px + size * Math.cos(angle)]);
             }
+
+            drawPolygon(ctx, points, 3);
 
             ctx.closePath();
             if (color) {
@@ -194,7 +198,7 @@
 
         var board_draw = [];
 
-        var squaresize = 60;
+        var squaresize = 100;
 
         let poly_size = squaresize / 2;
 
