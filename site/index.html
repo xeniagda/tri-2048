@@ -17,13 +17,28 @@ canvas {
     vertical-align: middle;
 }
 
+#wrapper {
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#buttons {
+    display: inline-block;
+    vertical-align: middle;
+}
+
         </style>
         <script src="rounded.js"></script>
     </head>
     <body>
-        <div style="display: inline-block;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);white-space: nowrap;overflow: hidden;">
+        <div id="wrapper">
             <canvas id="2048_canvas" /></canvas>
-            <div style="display: inline-block;vertical-align: middle;">
+            <div id="buttons" style="">
                 <button class="move" onclick="result.instance.exports.merge_dir(0)">↖</button>
                 <button class="move" onclick="result.instance.exports.merge_dir(1)">↗</button>
                 <br/> <br/>
@@ -33,8 +48,15 @@ canvas {
                 <button class="move" onclick="result.instance.exports.merge_dir(4)">↙</button>
                 <button class="move" onclick="result.instance.exports.merge_dir(5)">↘</button>
                 <br/> <br/>
-                <button class="move" onclick="result.instance.exports.reset(4, true); ded = false;">Restart</button>
+                <button
+                    class="move"
+                    onclick="result.instance.exports.reset(newSize, true); ded = false; updateSize()">
+                    Restart
+                </button>
 
+                <br/> <br/>
+                Size:
+                <input id="size" type="number" value=4 onchange="updateSize()"></input>
                 <br/>
                 <select id="colorscheme">
                     <!-- <option class="color" value="normal" selected> Normal colorscheme </option> -->
@@ -54,8 +76,7 @@ canvas {
             return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
         }
 
-        function hue(h)
-        {
+        function hue(h) {
             var r = Math.abs(h * 6 - 3) - 1;
             var g = 2 - Math.abs(h * 6 - 2);
             var b = 2 - Math.abs(h * 6 - 4);
@@ -161,7 +182,6 @@ canvas {
         function draw_board() {
             var e = document.getElementById("colorscheme")
             colorscheme = e.options[e.selectedIndex].value;
-            console.log(colorscheme);
 
 
             let current_time = + new Date();
@@ -249,6 +269,7 @@ canvas {
         }
 
         var color_time = 0;
+        var new_size;
 
         let move_speed = 13;
         let bounce_speed = 15;
@@ -366,10 +387,16 @@ canvas {
 
                 requestAnimationFrame(draw_board);
 
+                document.getElementById("size").value = board.length;
+                newSize = board.length;
 
                 document.body.addEventListener("keydown", event => {
                     result.instance.exports.key_down(event.keyCode);
                 });
+
             })
+        function updateSize() {
+            newSize = document.getElementById("size").value | 0;
+        }
     </script>
 </html>
