@@ -28,8 +28,18 @@
         <button class="move" onclick="result.instance.exports.merge_dir(5)">↘</button>
         <br/> <br/>
         <button class="move" onclick="result.instance.exports.reset(4, true); ded = false;">Restart</button>
+
+        <br/>
+        <select id="colorscheme">
+            <option class="color" value="2048" selected> 2048 colorscheme </option>
+            <option class="color" value="rainbow"> Rainbow! </option>
+        </select>
     </body>
     <script>
+
+        let COLORS_NORMAL = ["#E0D394", "#BB8D60", "#E0B994", "#FFE4CA", "#BBAC60", "#E0D394"];
+        let COLORS_2048 = ["#BDAFA2", "#CDC1B4", "#EDE5DA", "#ECE0C8", "#EFB27B", "#F99564", "#F97960", "#F85F3F",
+            "#EBCF7B", "#EECB63", "#ECC75C", "#E5C45B", "#E8BF49"];
 
         function rgbToHex(rgb) {
             return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
@@ -102,7 +112,7 @@
                 ctx.stroke();
             }
 
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#333333';
 
             if (num != 0) {
                 text = 1 << num;
@@ -111,10 +121,33 @@
         }
 
         function num_to_color(num) {
-            return rgbToHex(HSVtoRGB(num / 11 + color_time, 1, 1))
+            if (num == 0) {
+                return rgbToHex(HSVtoRGB(num / 11 + color_time, 0.5, 0.5))
+            }
+            return rgbToHex(HSVtoRGB(num / 11 + color_time, num / 11, 1))
+        }
+
+        function get_color_and_outline(num) {
+            if (colorscheme == "normal") {
+                color = COLORS_NORMAL[Math.min(COLORS_NORMAL.length - 1, num + 1)];
+                outline = "#FFFFFF";
+            } else if (colorscheme == "2048") {
+                color = COLORS_2048[Math.min(COLORS_2048.length - 1, num + 1)];
+                outline = null;
+            } else if (colorscheme == "rainbow") {
+                color = num_to_color(num);
+                outline = "#000000";
+            }
+
+            return [color, outline];
         }
 
         function draw_board() {
+            var e = document.getElementById("colorscheme")
+            colorscheme = e.options[e.selectedIndex].value;
+            console.log(colorscheme);
+
+
             let current_time = + new Date();
             let delta_t = (current_time - last_time) / 1000;
 
@@ -130,20 +163,30 @@
 
             for (var y = 0; y < board.length; y++) {
                 for (var x = 0; x <= y; x++) {
-                    draw_tile(0, y, x, poly_size * 1.5, "#ffb368", null);
+                    if (colorscheme == "normal") {
+                        color = COLORS_NORMAL[0];
+                    } else if (colorscheme == "2048") {
+                        color = COLORS_2048[0];
+                    } else if (colorscheme == "rainbow") {
+                        color = "#ffb368";
+                    }
+                    draw_tile(0, y, x, poly_size * 1.5, color, null);
                 }
             }
 
             for (var y = 0; y < board.length; y++) {
                 for (var x = 0; x <= y; x++) {
-                    draw_tile(board_draw[y][x], y, x, poly_size, num_to_color(board_draw[y][x]), "#000000");
+                    let col_out = get_color_and_outline(board_draw[y][x])
+                    draw_tile(board_draw[y][x], y, x, poly_size, col_out[0], col_out[1]);
                 }
             }
 
             floating.forEach(floater => {
+                let col_out = get_color_and_outline(floater.num);
+
                 draw_tile(floater.num, floater.y, floater.x, poly_size +
                     poly_size * Math.max(0, 1 - (floater.bounce - 1) * (floater.bounce - 1)) / 10,
-                    num_to_color(floater.num), "#000000");
+                    col_out[0], col_out[1]);
             });
 
             if (ded) {
@@ -158,6 +201,9 @@
                 let dist = Math.sqrt(dx ** 2 + dy ** 2);
 
                 if (dist < move_speed * delta_t) {
+                    board_draw[floater.to_y][floater.to_x] = board[floater.to_y][floater.to_x];
+
+                    floater.num = board[floater.to_y][floater.to_x];
                     floater.x = floater.to_x;
                     floater.y = floater.to_y;
 
@@ -165,7 +211,6 @@
                         floater.bounce += bounce_speed * delta_t;
                         return true;
                     } else {
-                        board_draw[floater.to_y][floater.to_x] = board[floater.to_y][floater.to_x];
                         return false;
                     }
                 } else {
@@ -185,8 +230,10 @@
 
         var color_time = 0;
 
-        let move_speed = 25;
-        let bounce_speed = 20;
+        let move_speed = 13;
+        let bounce_speed = 15;
+
+        var colorscheme = "2048";
 
         var ded = false;
 
